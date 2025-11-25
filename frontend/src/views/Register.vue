@@ -21,7 +21,7 @@ const register = async () => {
 
     localStorage.setItem("token", res.data.token);
 
-    router.push("/board");
+    router.push("/boards");
   } catch (err: any) {
     error.value = err.response?.data?.message || "Registration failed";
   }
@@ -37,9 +37,9 @@ const register = async () => {
       <p class="subtitle">Join and start organizing</p>
 
       <form class="form" @submit.prevent="register">
-      <input v-model="name" placeholder="Name" />
-      <input v-model="email" placeholder="Email" />
-      <input v-model="password" type="password" placeholder="Password" />
+      <input class="input" v-model="name" placeholder="Name" />
+      <input class="input" v-model="email" placeholder="Email" />
+      <input class="input" v-model="password" type="password" placeholder="Password" />
 
         <button class="btn">Register</button>
       </form>

@@ -7,17 +7,12 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\RegisterRequest;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
-        ]);
-
         $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
@@ -47,6 +42,13 @@ class AuthController extends Controller
         }
 
         $user  = User::where('email', $request->email)->first();
+
+        // Alternative
+        // if(!Hash::check($request->input('password'), $user->password)) {
+            // return response()->json([
+                // 'message' => 'ebi sa ne moje da si vlezesh v profila'
+            // ], 400);
+        // }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

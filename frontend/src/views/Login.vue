@@ -18,7 +18,7 @@ const login = async () => {
 
     localStorage.setItem("token", res.data.token);
 
-    router.push("/board");
+    router.push("/boards");
   } catch (err: any) {
     error.value = err.response?.data?.message || "Login failed";
   }
@@ -33,8 +33,8 @@ const login = async () => {
       <p class="subtitle">Log in to your account</p>
 
       <form class="form" @submit.prevent="login">
-      <input v-model="email" placeholder="Email" />
-      <input v-model="password" type="password" placeholder="Password" />
+      <input class="input" v-model="email" placeholder="Email" />
+      <input class="input" v-model="password" type="password" placeholder="Password" />
 
         <button class="btn">Login</button>
       </form>

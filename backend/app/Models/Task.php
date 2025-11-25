@@ -22,7 +22,7 @@ class Task extends Model
 
     public function list()
     {
-        return $this->belongsTo(ListModel::class);
+        return $this->belongsTo(ListModel::class, 'list_id');
     }
 
     public function assignee()

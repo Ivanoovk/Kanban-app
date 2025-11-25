@@ -23,10 +23,6 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
-
     protected function casts(): array
     {
         return [
@@ -35,9 +31,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function board()
+    public function boards()
     {
-        return $this->hasOne(Board::class);
+        return $this->hasMany(Board::class);
     }
 }
 
