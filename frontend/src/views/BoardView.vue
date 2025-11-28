@@ -11,6 +11,7 @@ import TaskCard from "../components/Task/TaskCard.vue";
 import TaskDetailsModal from "../components/Task/TaskDetailsModal.vue";
 import EditTaskModal from "../components/Task/EditTaskModal.vue";
 import DeleteTaskModal from "../components/Task/DeleteTaskModal.vue";
+import draggable from "vuedraggable";
 import type { Column } from "../types/Column";
 import type { Task } from "../types/Task";
 import "../assets/boardView.css";
@@ -278,6 +279,21 @@ const deleteTask = async () => {
   }
 };
 
+
+
+const onDragEnd = async (event: any) => {
+  const task = event.item.__vueParentComponent.props.element;
+  const newColumnId = event.to.__vueParentComponent.props.col.id;
+
+  
+  if (task.list_id !== newColumnId) {
+    await api.put(`/tasks/${task.id}`, { list_id: newColumnId });
+
+    task.list_id = newColumnId;
+  }
+};
+
+
 </script>
 
 <template>
@@ -315,12 +331,19 @@ const deleteTask = async () => {
     </div>
 
     <div class="column-content"></div>
-      <TaskCard
-        v-for="task in col.tasks"
-        :key="task.id"
-        :task="task"
-        @click="openTaskDetails(task)"
-      />
+      <draggable
+        v-model="col.tasks"
+        group="tasks"
+        item-key="id"
+        @end="onDragEnd"
+      >
+        <template #item="{ element }">
+          <TaskCard
+            :task="element"
+            @click="openTaskDetails(element)"
+          />
+        </template>
+      </draggable>
       <button class="add-item-btn" @click="openTaskModal(col.id)">+ Add item</button>
   </div>
 
