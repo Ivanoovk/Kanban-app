@@ -38,6 +38,8 @@ const activeColumn = ref<Column | null>(null);
 const selectedColumn = ref<Column | null>(null);
 const selectedTask = ref<Task | null>(null);
 
+const isDragging = ref(false);
+
 
 
 // --- Modals ---
@@ -280,16 +282,31 @@ const deleteTask = async () => {
 };
 
 
+// --- Drag & Drop reorder + move between columns ---
+const onTaskMoved = async () => {
+  try {
+    const updatePromises: Promise<any>[] = [];
 
-const onDragEnd = async (event: any) => {
-  const task = event.item.__vueParentComponent.props.element;
-  const newColumnId = event.to.__vueParentComponent.props.col.id;
+    for (const col of columns.value) {
+      col.tasks.forEach((task, index) => {
+        updatePromises.push(
+          api.put(`/tasks/${task.id}`, {
+            title: task.title,
+            description: task.description,
+            priority: task.priority,
+            due_date: task.due_date,
+            tags: task.tags,
+            list_id: col.id,
+            order: index,
+          })
+        );
+      });
+    }
 
-  
-  if (task.list_id !== newColumnId) {
-    await api.put(`/tasks/${task.id}`, { list_id: newColumnId });
-
-    task.list_id = newColumnId;
+    await Promise.all(updatePromises);
+    console.log("Task orders saved.");
+  } catch (err: any) {
+    console.error("Failed to save tasks order", err.response?.data ?? err);
   }
 };
 
@@ -317,7 +334,8 @@ const onDragEnd = async (event: any) => {
     <div
       class="column"
       v-for="col in columns"
-      :key="col.id">
+      :key="col.id"
+      :data-id="col.id">
 
     <div class="column-header">
       <h3>{{ col.title }}</h3>
@@ -330,20 +348,35 @@ const onDragEnd = async (event: any) => {
           
     </div>
 
-    <div class="column-content"></div>
+    <div class="column-content">
       <draggable
         v-model="col.tasks"
         group="tasks"
         item-key="id"
-        @end="onDragEnd"
+        :ghost-class="'drag-ghost'"
+        :animation="200"
+        :fallbackOnBody="true"
+        @start="isDragging = true"
+        @end="() => { isDragging = false; onTaskMoved(); }"
+        @dragenter="($event.target.closest('.column')?.classList.add('drag-over'))"
+        @dragleave="($event.target.closest('.column')?.classList.remove('drag-over'))"
       >
+        <!--Render task-->
         <template #item="{ element }">
           <TaskCard
             :task="element"
             @click="openTaskDetails(element)"
           />
         </template>
+
+        <template #footer> <!--The drop-zone shows if the column is empty-->
+          <div v-if="isDragging && col.tasks.length === 0" class="empty-drop-zone">
+            Drop task here
+          </div>
+        </template>
       </draggable>
+    </div>
+      
       <button class="add-item-btn" @click="openTaskModal(col.id)">+ Add item</button>
   </div>
 

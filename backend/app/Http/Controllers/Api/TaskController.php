@@ -13,6 +13,7 @@ class TaskController extends Controller
     {
         return Task::where('list_id', $listId)
             ->orderBy('order')
+            ->orderBy('id')
             ->get();
     }
 
@@ -51,6 +52,8 @@ class TaskController extends Controller
             'priority' => 'required|in:low,medium,high',
             'due_date' => 'nullable|date',
             'tags' => 'nullable|string',
+            'list_id' => 'sometimes|integer|exists:lists,id',
+            'order' => 'sometimes|integer',
         ]);
 
         $task->update($validated);
@@ -65,4 +68,5 @@ class TaskController extends Controller
 
         return response()->json(['message' => 'Task deleted']);
     }
+
 }

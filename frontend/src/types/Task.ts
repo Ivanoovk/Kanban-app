@@ -8,4 +8,5 @@ export interface Task {
   due_date?: string | null;
   tags?: string | null;
   list_id: number;
+  order:number;
 }
