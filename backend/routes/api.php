@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BoardController;
 use App\Http\Controllers\Api\ListController;
 use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\AttachmentController;
 
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -41,6 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/tasks/{id}', [TaskController::class, 'update']);
     Route::delete('/tasks/{id}', [TaskController::class, 'delete']);
 
-    
+    //Attachments
+    Route::get('/tasks/{taskId}/attachments', [AttachmentController::class, 'showAttachments']);
+    Route::post('/tasks/{taskId}/attachments', [AttachmentController::class, 'upload']);
+    Route::delete('/attachments/{id}', [AttachmentController::class, 'delete']);
 
 });

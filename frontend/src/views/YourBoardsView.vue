@@ -7,13 +7,9 @@ import CreateBoardModal from "../components/CreateBoardModal.vue";
 import EditBoardModal from "@/components/EditBoardModal.vue";
 import DeleteBoardModal from "@/components/DeleteBoardModal.vue";
 import "../assets/yourBoards.css";
+import type { Board } from "../types/Board";
 
-// Describes the structure of a board as returned by the backend.
-interface Board { 
-  id: number;
-  title: string;
-  description?: string | null;
-}
+
 
 const router = useRouter();
 

@@ -1,8 +1,74 @@
+
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import type { Task } from "../../types/Task";
+import { api } from "../../api";
+
+const props = defineProps<{
+  task: Task;
+}>();
+
+const emit = defineEmits(["close", "edit", "delete"]);
+
+const showMenu = ref(false);
+const attachments = ref<any[]>([]);
+const newComment = ref("");
+
+const toggleMenu = () => {
+  showMenu.value = !showMenu.value;
+};
+
+
+onMounted(async () => {
+  loadAttachments();
+});
+
+const loadAttachments = async () => {
+  try {
+    const res = await api.get(`/tasks/${props.task.id}/attachments`);
+    attachments.value = res.data.map((a: any) => ({
+      ...a,
+      url: `${import.meta.env.VITE_PUBLIC_API_URL}/storage/${a.file_path}`
+    }));
+  } catch {
+    attachments.value = [];
+  }
+};
+
+const uploadAttachment = async (e: any) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const form = new FormData();
+  form.append("file", file);
+
+  const res = await api.post(`/tasks/${props.task.id}/attachments`, form, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
+
+  attachments.value.push({
+    ...res.data,
+    url: `${import.meta.env.VITE_PUBLIC_API_URL}/storage/${res.data.file_path}`
+  });
+};
+
+const removeAttachment = async (id: number) => {
+  await api.delete(`/attachments/${id}`);
+  attachments.value = attachments.value.filter(f => f.id !== id);
+};
+</script>
+
+
+
+
+
+
+
 <template>
   <div class="overlay" @click.self="$emit('close')">
     <div class="panel">
      
-      <!-- HEADER -->
+
       <div class="header">
         <h2 class="title">{{ task.title }}</h2>
 
@@ -20,10 +86,10 @@
         </div>
       </div>
 
-      <!-- CONTENT -->
+
       <div class="content">
 
-        <!-- DESCRIPTION -->
+   
         <section>
           <label>Description</label>
           <p class="wrapped">
@@ -31,41 +97,49 @@
           </p>
         </section>
 
-        <!-- PRIORITY -->
+        
         <section>
           <label>Priority</label>
           <p class="priority" :class="task.priority">{{ task.priority }}</p>
         </section>
 
-        <!-- DUE DATE -->
+        
         <section>
           <label>Due date</label>
           <p>{{ task.due_date || "No due date" }}</p>
         </section>
 
-        <!-- TAGS -->
+        
         <section>
           <label>Tags</label>
           <p>{{ task.tags || "—" }}</p>
         </section>
 
-        <!-- ATTACHMENTS -->
+        
         <section>
           <label>Attachments</label>
 
           <div class="attachments-box">
-            <p class="empty">No attachments</p>
+            <template v-if="attachments.length">
+            <div class="file-row" v-for="file in attachments" :key="file.id">
+              <a :href="file.url" target="_blank">{{ file.file_name }}</a>
+              <button @click="removeAttachment(file.id)" class="file-delete">✕</button>
+            </div>
+            </template>
+          
+            <p v-else class="empty">No attachments</p>
           </div>
 
           <div class="attachments-actions">
-            <button class="attach-btn">
+            <label class="attach-btn">
               <img src="/src/assets/icons/attach.png" class="attach-icon" />
-              Add attachment
-            </button>
+                Add attachment
+              <input type="file" @change="uploadAttachment" hidden />
+            </label>
           </div>
         </section>
 
-        <!-- COMMENTS WRITE AREA -->
+        
 <section>
   <label>Comment</label>
 
@@ -80,7 +154,7 @@
   </div>
 </section>
 
-<!-- COMMENT LIST SECTION -->
+
 <section>
   <h3 class="comments-title">Comment section</h3>
 
@@ -95,26 +169,8 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from "vue";
-import type { Task } from "../../types/Task";
-
-const props = defineProps<{
-  task: Task;
-}>();
-
-const emit = defineEmits(["close", "edit", "delete"]);
-
-const showMenu = ref(false);
-const newComment = ref("");
-
-const toggleMenu = () => {
-  showMenu.value = !showMenu.value;
-};
-</script>
 
 <style scoped>
-/* BACKDROP */
 .overlay {
   position: fixed;
   inset: 0;
@@ -124,7 +180,6 @@ const toggleMenu = () => {
   z-index: 1000;
 }
 
-/* MAIN PANEL */
 .panel {
   width: 50vw;
   max-width: 700px;
@@ -136,7 +191,7 @@ const toggleMenu = () => {
   box-sizing: border-box;
 }
 
-/* HEADER */
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -148,7 +203,6 @@ const toggleMenu = () => {
   word-break: break-word;
 }
 
-/* MENU BTN */
 .menu {
   background: none;
   border: none;
@@ -156,7 +210,6 @@ const toggleMenu = () => {
   cursor: pointer;
 }
 
-/* DROPDOWN */
 .dropdown {
   position: absolute;
   top: 36px;
@@ -204,7 +257,7 @@ const toggleMenu = () => {
   color: #e63946;
 }
 
-/* CONTENT */
+
 .content {
   margin-top: 20px;
   display: flex;
@@ -223,18 +276,18 @@ section p {
   font-size: 14px;
 }
 
-/* FIX DESCRIPTION WRAP */
+
 .wrapped {
   white-space: pre-wrap;
   overflow-wrap: break-word;
 }
 
-/* PRIORITY COLORS */
+
 .priority.low { color: #10b981; }
 .priority.medium { color: #6366f1; }
 .priority.high { color: #ef4444; }
 
-/* ATTACHMENTS */
+
 .attachments-box {
   margin-top: 10px;
   padding: 12px;
@@ -275,7 +328,7 @@ section p {
   font-size: 13px;
 }
 
-/* COMMENTS */
+
 .comment-input {
   width: 100%;
   min-height: 90px;
@@ -322,5 +375,30 @@ section p {
   font-weight: 600;
   color: #4b5563;
 }
+
+
+
+
+.file-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #eef2ff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.file-row a { color: #4f46e5; text-decoration:none; font-size:14px; }
+.file-delete { border:none; background:none; color:#e11d48; font-size:18px; cursor:pointer; }
+
+.attach-btn {
+  display:flex; align-items:center; gap:6px;
+  background:#eef2ff; padding:8px 12px;
+  border-radius:6px; cursor:pointer; font-size:14px; color:#4f46e5;
+}
+
+.attach-btn:hover { background:#e5e7ff; }
+.attach-btn input { display:none; }
 
 </style>
