@@ -288,14 +288,12 @@ const onTaskMoved = async () => {
     const updatePromises: Promise<any>[] = [];
 
     for (const col of columns.value) {
+
       col.tasks.forEach((task, index) => {
+
         updatePromises.push(
           api.put(`/tasks/${task.id}`, {
-            title: task.title,
-            description: task.description,
-            priority: task.priority,
-            due_date: task.due_date,
-            tags: task.tags,
+            ...task,
             list_id: col.id,
             order: index,
           })

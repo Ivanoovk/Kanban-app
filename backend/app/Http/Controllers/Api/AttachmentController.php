@@ -35,7 +35,7 @@ class AttachmentController extends Controller
             'file_path'  => $path,
             'file_name'  => $file->getClientOriginalName(),
             'file_type'  => $file->getMimeType(),
-            'file_size'  => $file->getSize(), // bytes
+            'file_size'  => $file->getSize(), 
         ]);
 
         return response()->json($attachment, 201);
