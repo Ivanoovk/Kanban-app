@@ -10,7 +10,7 @@ const dueDate = ref<string | null>(null);
 const tags = ref("");
 
 const submit = () => {
-  if (!title.value.trim()) return; // само заглавието е задължително
+  if (!title.value.trim()) return; 
 
   emit("create", {
     title: title.value.trim(),
@@ -20,7 +20,6 @@ const submit = () => {
     tags: tags.value.trim() || null,
   });
 
-  // чистим полетата
   title.value = "";
   description.value = "";
   priority.value = "medium";
