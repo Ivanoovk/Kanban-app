@@ -101,7 +101,7 @@ Modal with fields:
 ---
 
 ### 7. Drag & Drop between columns  
-![Tasks drag & drop](docs/screenshots/07-tasks-dnd.png)  
+![Tasks drag & drop](docs/screenshots/07-task-dnd.png)  
 Tasks can be **dragged and dropped** between them and between columns.  
 
 
